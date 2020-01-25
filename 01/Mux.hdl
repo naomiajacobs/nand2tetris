@@ -1,0 +1,54 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux.hdl
+
+/*
+Implementation notes:
+I feel like I really learned a lot of tricks with Mux. 
+I knew the positive case (if sel == 1) had to be sel AND X, 
+but couldn't figure out the negative case for a while. 
+I simplified the problem by realizing that (sel AND b) OR (foo) 
+would allow me to focus entirely on foo, as it would only matter if (sel AND b) was false.
+
+foo's chart is:
+a sel out
+0  0  0
+0  1  0
+1  0  1
+1  1  0
+
+Which is much more manageable. From there, I realized that !a yields
+!a sel out
+ 1  0  0
+ 1  1  0
+ 0  0  1
+ 0  1  0
+
+ and from there it's easy to eyeball that !a OR sel gets you really close:
+ (!a OR sel) out
+     1        0
+     1        0
+     0        1
+     1        0
+
+and that's just one NOT away from the right answer.
+*/
+
+/** 
+ * Multiplexor:
+ * out = a if sel == 0
+ *       b otherwise
+ */
+
+CHIP Mux {
+    IN a, b, sel;
+    OUT out;
+
+    PARTS:
+    Not(in=a, out=notA);
+    Or(a=sel, b=notA, out=notAOrSel);
+    Not(in=notAOrSel, out=ifA);
+    And(a=sel, b=b, out=ifB);
+    Or(a=ifA, b=ifB, out=out);
+}
